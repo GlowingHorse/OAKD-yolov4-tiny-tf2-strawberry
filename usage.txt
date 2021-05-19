@@ -1,0 +1,7 @@
+1. Prepare your fruit dataset.
+2. Change files in model_data directory.
+3. Finetune params in train_prune_eager.py based on your needs
+4. Save best trained model manually or automatically. (empirically valid loss less than 2)
+5. Upload model files to your Googledrive, like:
+6. Run convertPbModel-evalData-yolov4.ipynb in your colab to generate .blob file.
+7. Download .blob file to models directory and use test-strawberryPrunedYolov4Tiny-plainNN.py to detect your fruits.
