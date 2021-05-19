@@ -13,5 +13,8 @@ I analyzed the number of channels that can be pruned for each layer according to
 ### 4. Save best trained model manually or automatically. (empirically valid loss less than 2)
 Our training code mainly refers to the code of [here](https://github.com/bubbliiiing/yolov4-tiny-tf2/blob/master/train.py). The model trained in the non-eager mode always makes an error when trying to convert it to the IR model, so I only train the model in eager mode. However, the non-eager mode can be faster, thus, you can also use the non-eager mode to train to improve efficiency, and then load the weights in eager mode and save it.
 ### 5. Upload model files to your Googledrive, like:
-### 6. Run convertPbModel-evalData-yolov4.ipynb in your colab to generate .blob file.
-### 7. Download .blob file to models directory and use test-strawberryPrunedYolov4Tiny-plainNN.py to detect your fruits.
+![image](https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/drive_files.png)
+### 6. Run `convertPbModel-evalData-yolov4.ipynb` in your colab to generate `.blob` file.
+Before running, you need to modify the directory where the uploaded model files are stored.
+### 7. Download .blob file to models directory and use `test-strawberryPrunedYolov4Tiny-plainNN.py` to detect your fruits.
+Run `.blob` model in your depth camera, and use some printed images or real fruits to test it.
