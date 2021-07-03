@@ -1,5 +1,5 @@
 # depth-yolov4-tiny-tf2-strawberry-git
-### To detect strawberry with OAK-D
+### To detect strawberry with [OAK-D](https://opencv.org/opencv-ai-competition-2021/#introSection)
 ### 0. Prepare your python environment.
 tensorflow2 and depthai (newest)
 ### 1. Prepare your fruit dataset.
