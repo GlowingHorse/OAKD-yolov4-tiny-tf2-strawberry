@@ -22,5 +22,5 @@ Our training code mainly refers to the code of [here](https://github.com/bubblii
 ### 6. Run `convertPbModel-evalData-yolov4.ipynb` in your colab to generate `.blob` file.
 Before running, you need to modify the directory where the uploaded model files are stored.
 
-### 7. Download .blob file to models directory and use `test-strawberryPrunedYolov4Tiny-plainNN.py` to detect your fruits.
+### 7. Download .blob file to models directory and use `detDepthStrawb-prunedYolov4Tiny-plainNN.py` to detect your fruits.
 Run `.blob` model in your depth camera, and use some printed images or real fruits to test it.
