@@ -23,4 +23,5 @@ Our training code mainly refers to the code of [here](https://github.com/bubblii
 Before running, you need to modify the directory where the uploaded model files are stored.
 
 ### 7. Download .blob file to models directory and use `detDepthStrawb-prunedYolov4Tiny-plainNN.py` to detect your fruits.
-Run `.blob` model in your depth camera, and use some printed images or real fruits to test it.
+Run `.blob` model in your depth camera, and use some printed images or real fruits to test it.<br><br>
+<img src="https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/img/detect_strawberry.png" alt="drawing" width="800"/>
