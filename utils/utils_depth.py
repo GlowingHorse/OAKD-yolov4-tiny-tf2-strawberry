@@ -119,17 +119,23 @@ def get_random_data_with_Mosaic(annotation_line, input_shape, max_boxes=100, hue
     place_y = [0, int(h * min_offset_y), int(h * min_offset_y), 0]
 
     for line in annotation_line:
+        # 每一行进行分割
         line_content = line.split()
+        # 打开图片
         image = Image.open(line_content[0])
         image = image.convert("RGB")
+        # 图片的大小
         iw, ih = image.size
+        # 保存框的位置
         box = np.array([np.array(list(map(int, box.split(',')))) for box in line_content[1:]])
 
+        # 是否翻转图片
         flip = rand() < .5
         if flip and len(box) > 0:
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
             box[:, [0, 2]] = iw - box[:, [2, 0]]
-            
+
+        # 对输入进来的图片进行缩放
         new_ar = w / h
         scale = rand(scale_low, scale_high)
         if new_ar < 1:
@@ -140,6 +146,7 @@ def get_random_data_with_Mosaic(annotation_line, input_shape, max_boxes=100, hue
             nh = int(nw / new_ar)
         image = image.resize((nw, nh), Image.BICUBIC)
 
+        # 进行色域变换
         hue = rand(-hue, hue)
         sat = rand(1, sat) if rand() < .5 else 1 / rand(1, sat)
         val = rand(1, val) if rand() < .5 else 1 / rand(1, val)
@@ -155,6 +162,7 @@ def get_random_data_with_Mosaic(annotation_line, input_shape, max_boxes=100, hue
         image = cv2.cvtColor(x, cv2.COLOR_HSV2RGB)  # numpy array, 0 to 1
 
         image = Image.fromarray((image * 255).astype(np.uint8))
+        # 将图片进行放置，分别对应四张分割图片的位置
         dx = place_x[index]
         dy = place_y[index]
         new_image = Image.new('RGB', (w, h), (128, 128, 128))
@@ -163,6 +171,7 @@ def get_random_data_with_Mosaic(annotation_line, input_shape, max_boxes=100, hue
 
         index = index + 1
         box_data = []
+        # 对box进行重新处理
         if len(box) > 0:
             np.random.shuffle(box)
             box[:, [0, 2]] = box[:, [0, 2]] * nw / iw + dx
@@ -178,6 +187,8 @@ def get_random_data_with_Mosaic(annotation_line, input_shape, max_boxes=100, hue
 
         image_datas.append(image_data)
         box_datas.append(box_data)
+
+    # 将图片分割，放在一起
     cutx = np.random.randint(int(w * min_offset_x), int(w * (1 - min_offset_x)))
     cuty = np.random.randint(int(h * min_offset_y), int(h * (1 - min_offset_y)))
 
@@ -187,8 +198,10 @@ def get_random_data_with_Mosaic(annotation_line, input_shape, max_boxes=100, hue
     new_image[cuty:, cutx:, :] = image_datas[2][cuty:, cutx:, :]
     new_image[:cuty, cutx:, :] = image_datas[3][:cuty, cutx:, :]
 
+    # 对框进行进一步的处理
     new_boxes = merge_bboxes(box_datas, cutx, cuty)
 
+    # 将box进行调整
     box_data = np.zeros((max_boxes, 5))
     if len(new_boxes) > 0:
         if len(new_boxes) > max_boxes: new_boxes = new_boxes[:max_boxes]
@@ -209,6 +222,7 @@ def get_random_data(annotation_line, input_shape, max_boxes=100,
     h, w = input_shape
     box = np.array([np.array(list(map(int, box.split(',')))) for box in line[1:]])
 
+    # 对图像进行缩放并且进行长和宽的扭曲
     new_ar = w / h * rand(1 - jitter, 1 + jitter) / rand(1 - jitter, 1 + jitter)
     scale = rand(.25, 2)
     if new_ar < 1:
@@ -221,6 +235,7 @@ def get_random_data(annotation_line, input_shape, max_boxes=100,
     image = image.resize((nw, nh), Image.BICUBIC)
     depth_image = depth_image.resize((nw, nh), Image.BICUBIC)
 
+    # 将图像多余的部分加上灰条
     dx = int(rand(0, w - nw))
     dy = int(rand(0, h - nh))
 
@@ -232,11 +247,13 @@ def get_random_data(annotation_line, input_shape, max_boxes=100,
     new_depth_image.paste(depth_image, (dx, dy))
     depth_image = new_depth_image
 
+    # 翻转图像
     flip = rand() < .5
     if flip:
         image = image.transpose(Image.FLIP_LEFT_RIGHT)
         depth_image = depth_image.transpose(Image.FLIP_LEFT_RIGHT)
 
+    # 色域扭曲
     hue = rand(-hue, hue)
     sat = rand(1, sat) if rand() < .5 else 1 / rand(1, sat)
     val = rand(1, val) if rand() < .5 else 1 / rand(1, val)
@@ -257,6 +274,7 @@ def get_random_data(annotation_line, input_shape, max_boxes=100,
     x = color_space_change(image)
     image_data = cv2.cvtColor(x, cv2.COLOR_HSV2RGB)  # numpy array, 0 to 1
 
+    # 将box进行调整
     box_data = np.zeros((max_boxes, 5))
     if len(box) > 0:
         np.random.shuffle(box)
@@ -288,12 +306,23 @@ def cosine_decay_with_warmup(global_step,
                              hold_base_rate_steps=0,
                              min_learn_rate=0,
                              ):
+    """
+    参数：
+            global_step: 上面定义的Tcur，记录当前执行的步数。
+            learning_rate_base：预先设置的学习率，当warm_up阶段学习率增加到learning_rate_base，就开始学习率下降。
+            total_steps: 是总的训练的步数，等于epoch*sample_count/batch_size,(sample_count是样本总数，epoch是总的循环次数)
+            warmup_learning_rate: 这是warm up阶段线性增长的初始值
+            warmup_steps: warm_up总的需要持续的步数
+            hold_base_rate_steps: 这是可选的参数，即当warm up阶段结束后保持学习率不变，知道hold_base_rate_steps结束后才开始学习率下降
+    """
     if total_steps < warmup_steps:
         raise ValueError('total_steps must be larger or equal to '
                          'warmup_steps.')
+    # 这里实现了余弦退火的原理，设置学习率的最小值为0，所以简化了表达式
     learning_rate = 0.5 * learning_rate_base * (1 + np.cos(np.pi *
                                                            (global_step - warmup_steps - hold_base_rate_steps) / float(
         total_steps - warmup_steps - hold_base_rate_steps)))
+    # 如果hold_base_rate_steps大于0，表明在warm up结束后学习率在一定步数内保持不变
     if hold_base_rate_steps > 0:
         learning_rate = np.where(global_step > warmup_steps + hold_base_rate_steps,
                                  learning_rate, learning_rate_base)
@@ -301,8 +330,10 @@ def cosine_decay_with_warmup(global_step,
         if learning_rate_base < warmup_learning_rate:
             raise ValueError('learning_rate_base must be larger or equal to '
                              'warmup_learning_rate.')
+        # 线性增长的实现
         slope = (learning_rate_base - warmup_learning_rate) / warmup_steps
         warmup_rate = slope * global_step + warmup_learning_rate
+        # 只有当global_step 仍然处于warm up阶段才会使用线性增长的学习率warmup_rate，否则使用余弦退火的学习率learning_rate
         learning_rate = np.where(global_step < warmup_steps, warmup_rate,
                                  learning_rate)
 
@@ -311,6 +342,10 @@ def cosine_decay_with_warmup(global_step,
 
 
 class WarmUpCosineDecayScheduler(keras.callbacks.Callback):
+    """
+    继承Callback，实现对学习率的调度
+    """
+
     def __init__(self,
                  learning_rate_base,
                  total_steps,
@@ -319,34 +354,47 @@ class WarmUpCosineDecayScheduler(keras.callbacks.Callback):
                  warmup_steps=0,
                  hold_base_rate_steps=0,
                  min_learn_rate=0,
+                 # interval_epoch代表余弦退火之间的最低点
                  interval_epoch=[0.05, 0.15, 0.30, 0.50],
                  verbose=0):
         super(WarmUpCosineDecayScheduler, self).__init__()
+        # 基础的学习率
         self.learning_rate_base = learning_rate_base
+        # 热调整参数
         self.warmup_learning_rate = warmup_learning_rate
+        # 参数显示
         self.verbose = verbose
+        # learning_rates用于记录每次更新后的学习率，方便图形化观察
         self.min_learn_rate = min_learn_rate
         self.learning_rates = []
 
         self.interval_epoch = interval_epoch
+        # 贯穿全局的步长
         self.global_step_for_interval = global_step_init
+        # 用于上升的总步长
         self.warmup_steps_for_interval = warmup_steps
+        # 保持最高峰的总步长
         self.hold_steps_for_interval = hold_base_rate_steps
+        # 整个训练的总步长
         self.total_steps_for_interval = total_steps
 
         self.interval_index = 0
+        # 计算出来两个最低点的间隔
         self.interval_reset = [self.interval_epoch[0]]
         for i in range(len(self.interval_epoch) - 1):
             self.interval_reset.append(self.interval_epoch[i + 1] - self.interval_epoch[i])
         self.interval_reset.append(1 - self.interval_epoch[-1])
 
+    # 更新global_step，并记录当前学习率
     def on_batch_end(self, batch, logs=None):
         self.global_step = self.global_step + 1
         self.global_step_for_interval = self.global_step_for_interval + 1
         lr = K.get_value(self.model.optimizer.lr)
         self.learning_rates.append(lr)
 
+    # 更新学习率
     def on_batch_begin(self, batch, logs=None):
+        # 每到一次最低点就重新更新参数
         if self.global_step_for_interval in [0] + [int(i * self.total_steps_for_interval) for i in self.interval_epoch]:
             self.total_steps = self.total_steps_for_interval * self.interval_reset[self.interval_index]
             self.warmup_steps = self.warmup_steps_for_interval * self.interval_reset[self.interval_index]

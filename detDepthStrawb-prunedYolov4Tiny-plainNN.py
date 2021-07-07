@@ -34,7 +34,7 @@ if len(sys.argv) > 1:
 pipeline = dai.Pipeline()
 pipeline.setOpenVINOVersion(dai.OpenVINO.Version.VERSION_2021_2)
 
-# -------彩色图像-----------------------------------------------------
+# ----------------------------------------------------------
 print("Creating Color Camera...")
 cam_rgb = pipeline.createColorCamera()
 cam_rgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
@@ -55,7 +55,7 @@ isp_xout = pipeline.createXLinkOut()
 isp_xout.setStreamName("cam")
 cam_rgb.isp.link(isp_xout.input)
 
-# -------网络-----------------------------------------------------
+# ---------------------------------------------------------
 print("Creating Neural Network...")
 detection_nn = pipeline.createNeuralNetwork()
 detection_nn.setBlobPath(nnBlobPath)
@@ -73,7 +73,7 @@ detection_nn.out.link(xout_nn.input)
 # xout_passthrough.setMetadataOnly(True)
 # detection_nn.passthrough.link(xout_passthrough.input)
 
-# -------深度图像-----------------------------------------------------
+# --------------------------------------------------
 monoLeft = pipeline.createMonoCamera()
 monoRight = pipeline.createMonoCamera()
 monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
@@ -104,7 +104,7 @@ xout_depth = pipeline.createXLinkOut()
 xout_depth.setStreamName("depth")
 # stereo.depth.link(xout_depth.input)
 
-# -------空间位置计算-----------------------------------------------------
+# -----------------------------------------------------
 spatialLocationCalculator = pipeline.createSpatialLocationCalculator()
 
 xoutSpatialData = pipeline.createXLinkOut()
@@ -118,7 +118,7 @@ stereo.depth.link(spatialLocationCalculator.inputDepth)
 
 spatialLocationCalculator.setWaitForConfigInput(False)
 
-# --------这部分可以放到实时生成的部分---------
+# ----------
 topLeft_ori = dai.Point2f(0.5, 0.5)
 bottomRight_ori = dai.Point2f(0.51, 0.51)
 config_ori = dai.SpatialLocationCalculatorConfigData()

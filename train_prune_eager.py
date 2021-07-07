@@ -70,7 +70,6 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
 
     true_boxes = np.array(true_boxes, dtype='float32')
     input_shape = np.array(input_shape, dtype='int32')
-
     boxes_xy = (true_boxes[..., 0:2] + true_boxes[..., 2:4]) // 2
     boxes_wh = true_boxes[..., 2:4] - true_boxes[..., 0:2]
 
@@ -93,7 +92,6 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
     valid_mask = boxes_wh[..., 0] > 0
 
     for b in range(m):
-
         wh = boxes_wh[b, valid_mask[b]]
         if len(wh) == 0: continue
         # -----------------------------------------------------------#
@@ -104,7 +102,6 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
         box_mins = -box_maxes
 
         # -----------------------------------------------------------#
-        #
         #   intersect_area  [n,6]
         #   box_area        [n,1]
         #   anchor_area     [1,6]
@@ -119,14 +116,17 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
         anchor_area = anchors[..., 0] * anchors[..., 1]
 
         iou = intersect_area / (box_area + anchor_area - intersect_area)
-
+        # -----------------------------------------------------------#
         best_anchor = np.argmax(iou, axis=-1)
 
         for t, n in enumerate(best_anchor):
+            # -----------------------------------------------------------#
             for l in range(num_layers):
                 if n in anchor_mask[l]:
+                    # -----------------------------------------------------------#
                     i = np.floor(true_boxes[b, t, 0] * grid_shapes[l][1]).astype('int32')
                     j = np.floor(true_boxes[b, t, 1] * grid_shapes[l][0]).astype('int32')
+                    # -----------------------------------------------------------#
                     k = anchor_mask[l].index(n)
                     c = true_boxes[b, t, 4].astype('int32')
                     y_true[l][b, j, i, k, 0:4] = true_boxes[b, t, 0:4]
@@ -140,12 +140,10 @@ def get_train_step_fn():
     @tf.function
     def train_step(imgs, yolo_loss, targets, net, optimizer, regularization, normalize):
         with tf.GradientTape() as tape:
-            # 计算loss
             P5_output, P4_output = net(imgs, training=True)
             args = [P5_output, P4_output] + targets
             loss_value = yolo_loss(args, anchors, num_classes, label_smoothing=label_smoothing, normalize=normalize)
             if regularization:
-                # 加入正则化损失
                 loss_value = tf.reduce_sum(net.losses) + loss_value
         grads = tape.gradient(loss_value, net.trainable_variables)
         optimizer.apply_gradients(zip(grads, net.trainable_variables))
@@ -156,7 +154,7 @@ def get_train_step_fn():
 
 def fit_one_epoch(net, yolo_loss, optimizer, epoch, epoch_size, epoch_size_val, gen, genval, Epoch, anchors,
                   num_classes, label_smoothing, regularization=False, train_step=None,
-                  save_flag=False):
+                  save_flag=False, log_dir='logs/'):
     loss = 0
     val_loss = 0
     with tqdm(total=epoch_size, desc=f'Epoch {epoch + 1}/{Epoch}', postfix=dict, mininterval=0.3) as pbar:
@@ -178,7 +176,6 @@ def fit_one_epoch(net, yolo_loss, optimizer, epoch, epoch_size, epoch_size_val, 
         for iteration, batch in enumerate(genval):
             if iteration >= epoch_size_val:
                 break
-            # 计算验证集loss
             images, target0, target1 = batch[0], batch[1], batch[2]
             targets = [target0, target1]
             targets = [tf.convert_to_tensor(target) for target in targets]
@@ -198,31 +195,28 @@ def fit_one_epoch(net, yolo_loss, optimizer, epoch, epoch_size, epoch_size_val, 
     print('Total Loss: %.4f || Val Loss: %.4f ' % (loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
     print('Curr lr is: {:.8f}'.format(optimizer._decayed_lr(tf.float32).numpy()))
     if save_flag:
-        net.save_weights('logs/Epoch%d-Total_Loss%.4f-Val_Loss%.4f.h5' % (
+        net.save_weights(log_dir + 'Epoch%d-Total_Loss%.4f-Val_Loss%.4f.h5' % (
         (epoch + 1), loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
-        net.save('./logs/yolov4TinyStrawberry')
+        net.save(log_dir + 'yolov4TinyStrawberry')
 
 
 gpus = tf.config.experimental.list_physical_devices(device_type='GPU')
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
-
 if __name__ == "__main__":
-    flag_read_weight = True
+    flag_read_weight = False
     flag_warmUp = not flag_read_weight
-    Freeze_epoch = 1501
+    Freeze_epoch = None
 
     batch_size = 32
     batch_size_eval = 4
     annotation_path = '2007_train.txt'
-
-    log_dir = 'logs/'
-
+    log_dir = 'logs_pruned/'
+    # ----------------------------------------------------#
     classes_path = 'model_data/strawberry_class.txt'
     anchors_path = 'model_data/yolo_anchors.txt'
-
-    weights_path_my = './logs/Epoch1501-Total_Loss6.6706-Val_Loss9.0512.h5'
+    weights_path_my = log_dir + 'Epoch1501-Total_Loss6.6706-Val_Loss9.0512.h5'
     weights_path = 'model_data/yolov4_tiny_weights_coco.h5'
 
     input_shape = (416, 416)
@@ -231,18 +225,15 @@ if __name__ == "__main__":
 
     class_names = get_classes(classes_path)
     anchors = get_anchors(anchors_path)
-    # ------------------------------------------------------#
-    #   一共有多少类和多少先验框
-    # ------------------------------------------------------#
+    
     num_classes = len(class_names)
     num_anchors = len(anchors)
-
+    
     mosaic = False
     Cosine_scheduler = False
     label_smoothing = 0
 
     regularization = True
-
     Use_Data_Loader = False
 
     image_input = Input(shape=(None, None, 3))
@@ -257,6 +248,7 @@ if __name__ == "__main__":
         print('Load weights {}.'.format(weights_path))
         model_body.load_weights(weights_path, by_name=True, skip_mismatch=True)
 
+    # ----------------------------------------------------------------------#
     val_split = 0.1
     with open(annotation_path) as f:
         lines = f.readlines()
@@ -324,4 +316,4 @@ if __name__ == "__main__":
                 save_flag = False
             fit_one_epoch(model_body, yolo_loss, optimizer, epoch, epoch_size, epoch_size_val, gen, gen_val,
                           Epoch, anchors, num_classes, label_smoothing, regularization, get_train_step_fn(),
-                          save_flag=save_flag)
+                          save_flag=save_flag, log_dir=log_dir)
