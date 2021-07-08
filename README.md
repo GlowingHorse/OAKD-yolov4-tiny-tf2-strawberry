@@ -13,8 +13,10 @@ I manually adjust the camera internal parameters and then use image processing m
 Change class information and anchor sizes which can be calculated using `kmeans_for_anchors.py`
 ### 3. Finetune params in `train_prune_eager.py` based on your needs
 Batch size, inital learning rate and learning rate decay should be the parts that need adjustment the most.<br><br>
+You can also use `train.py` to train your network which is faster than eager mode.<br><br>
 I analyzed the number of channels that can be pruned for each layer according to the attribution pruning method ([paper](https://www.sciencedirect.com/science/article/pii/S0168169919313717), [code](https://github.com/GlowingHorse/Fast-Mango-Detection)), so the network size is much smaller than original yolov4-tiny. If more image classes need to be detected, the network also needs to be redesigned.
-### 4. Save best trained model manually or automatically. (empirically valid loss less than 2)
+### 4. Save best trained model manually or automatically.
+Empirically valid loss less than 2 is good (or 10 for non-eager model)<br>
 Our training code mainly refers to the code of [here](https://github.com/bubbliiiing/yolov4-tiny-tf2/blob/master/train.py). The model trained in the non-eager mode always makes an error when trying to convert it to the IR model, so I only train the model in eager mode. However, the non-eager mode can be faster, thus, you can also use the non-eager mode to train to improve efficiency, and then load the weights in eager mode and save it.
 ### 5. Upload model files to your Googledrive, like:
 <img src="https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/img/drive_files.png" alt="drawing" width="800"/>
