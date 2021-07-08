@@ -21,6 +21,7 @@ Our training code mainly refers to the code of [here](https://github.com/bubblii
 
 ### 6. Run `convertPbModel-evalData-yolov4.ipynb` in your colab to generate `.blob` file.
 Before running, you need to modify the directory where the uploaded model files are stored.
+Or you can also refer to [**Converting model to MyriadX blob**](https://docs.luxonis.com/en/latest/pages/model_conversion/) to convert your model. 
 
 ### 7. Download .blob file to models directory and use `detDepthStrawb-prunedYolov4Tiny-plainNN.py` to detect your fruits.
 Run `.blob` model in your depth camera, and use some printed images or real fruits to test it.<br><br>
