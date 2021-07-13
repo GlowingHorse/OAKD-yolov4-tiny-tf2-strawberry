@@ -1,7 +1,12 @@
 # depth-yolov4-tiny-tf2-strawberry-git
 ### To detect strawberry with [OAK-D](https://opencv.org/opencv-ai-competition-2021/#introSection)
+### The video is provided in this [Youtube Channel](https://youtu.be/BGaOO0MzBv0).
+
+---
+
 ### 0. Prepare your python environment.
 tensorflow2 and depthai (newest)
+
 ### 1. Prepare your fruit dataset.
 My strawberry dataset contains two classes, _i.e._, MatureStrawberry and GreenStrawberry. All data are collected from [Kobayashi Farm](https://kobayashifarm-mitaka.tokyo/) in Mure Mitaka City, Japan. Thank the orchard owner very much for supporting us in collecting fruit data.<br><br>
 <img src="https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/img/rgb-00007-16160356916470.jpeg" alt="drawing" width="400"/>
@@ -29,5 +34,3 @@ Or you can also refer to [**Converting model to MyriadX blob**](https://docs.lux
 Run `.blob` model in your depth camera, and use some printed images or real fruits to test it.<br><br>
 <img src="https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/img/detect_strawberry.png" alt="drawing" width="800"/>
 
-### Video
-Provided in this [Youtube Channel](https://youtu.be/BGaOO0MzBv0).
