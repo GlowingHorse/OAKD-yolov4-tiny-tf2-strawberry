@@ -28,3 +28,6 @@ Or you can also refer to [**Converting model to MyriadX blob**](https://docs.lux
 ### 7. Download .blob file to models directory and use `detDepthStrawb-prunedYolov4Tiny-plainNN.py` to detect your fruits.
 Run `.blob` model in your depth camera, and use some printed images or real fruits to test it.<br><br>
 <img src="https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/img/detect_strawberry.png" alt="drawing" width="800"/>
+
+### Video
+Provided in this [Youtube Channel](https://youtu.be/BGaOO0MzBv0).
