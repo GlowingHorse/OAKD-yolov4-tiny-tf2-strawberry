@@ -1,6 +1,6 @@
 # depth-yolov4-tiny-tf2-strawberry-git
 ### To detect strawberry with [OAK-D](https://opencv.org/opencv-ai-competition-2021/#introSection)
-### The video is provided in this [Youtube Channel](https://youtu.be/BGaOO0MzBv0).
+### Our video is provided in this [Youtube Channel](https://youtu.be/BGaOO0MzBv0).
 
 ---
 
