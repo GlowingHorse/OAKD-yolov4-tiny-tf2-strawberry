@@ -8,7 +8,7 @@
 tensorflow2 and depthai (newest)
 
 ### 1. Prepare your fruit dataset.
-My strawberry dataset contains two classes, _i.e._, MatureStrawberry and GreenStrawberry. All data are collected from [Kobayashi Farm](https://kobayashifarm-mitaka.tokyo/) in Mure Mitaka City, Japan. Thank the orchard owner very much for supporting us in collecting fruit data.<br><br>
+Our strawberry dataset contains two classes, _i.e._, MatureStrawberry and GreenStrawberry. All data are collected from [Kobayashi Farm](https://kobayashifarm-mitaka.tokyo/) in Mure Mitaka City, Japan. Thank the orchard owner very much for supporting us in collecting fruit data.<br><br>
 <img src="https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/img/rgb-00007-16160356916470.jpeg" alt="drawing" width="400"/>
 <img src="https://github.com/GlowingHorse/depth-yolov4-tiny-tf2-strawberry-git/blob/main/img/rgb-00357-16160404199341.jpeg" alt="drawing" width="400"/>
 <br><br>
